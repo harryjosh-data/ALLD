@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Guide to Advanced LLM Development</title>
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Interactive Guide to Advanced LLM Development">
+    <meta property="og:description" content="Explore the comprehensive lifecycle of building sophisticated Large Language Models, from data foundation to evaluation and advanced capabilities.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/index.html">
+    <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=Advanced+LLM+Development+Guide">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Interactive Guide to Advanced LLM Development">
+    <meta name="twitter:description" content="Explore the comprehensive lifecycle of building sophisticated Large Language Models, from data foundation to evaluation and advanced capabilities.">
+    <meta name="twitter:image" content="https://via.placeholder.com/1200x630.png?text=Advanced+LLM+Development+Guide">
+    <meta name="twitter:url" content="https://example.com/index.html">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Report Info: PEFT methods comparison -> Goal: Compare efficiency -> Viz: Illustrative Bar Chart (Chart.js) -> Interaction: Hover for details -> Justification: Visualizes relative parameter savings -> Library: Chart.js.
+        - Report Info: RLHF Process -> Goal: Explain flow -> Viz: HTML/Tailwind Diagram -> Interaction: Static -> Justification: Clear visual of stages.
+        - Report Info: GLUE/SuperGLUE Task Types -> Goal: Show benchmark composition -> Viz: Donut Chart (Chart.js) -> Interaction: Hover for percentages -> Justification: Quick understanding of benchmark diversity -> Library: Chart.js.
+        - Report Info: Tables (PII, Tokenizers, etc.) -> Goal: Organize & Compare -> Viz: Interactive HTML Tables -> Interaction: Filter for PEFT table (basic JS) -> Justification: Enhanced data exploration.
+        CONFIRMING NO SVG/Mermaid. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .tab-button { transition: all 0.3s ease; }
+        .tab-button.active { border-color: #0284c7; background-color: #0284c7; color: white; }
+        .tab-button:not(.active):hover { background-color: #f0f9ff; border-color: #38bdf8; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        h2 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1rem; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+        h3 { font-size: 1.4rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #334155; }
+        h4 { font-size: 1.15rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #475569; }
+        p { margin-bottom: 1rem; line-height: 1.6; color: #475569; }
+        ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; color: #475569; }
+        li { margin-bottom: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+        th, td { border: 1px solid #cbd5e1; padding: 0.75rem; text-align: left; font-size: 0.9rem; }
+        th { background-color: #f1f5f9; color: #1e293b; font-weight: 600; }
+        tr:nth-child(even) { background-color: #f8fafc; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; margin-bottom: 2rem; padding: 1rem; border: 1px solid #e2e8f0; border-radius: 0.5rem; background-color: white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        @media (max-width: 768px) { .chart-container { height: 300px; max-height: 350px; } }
+        .table-responsive { overflow-x: auto; }
+        .code-like { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-family: monospace; color: #0ea5e9; font-size: 0.875rem; }
+        .accent-text { color: #0ea5e9; font-weight: 600; }
+        .intro-paragraph { font-size: 1.05rem; color: #334155; margin-bottom: 1.5rem; }
+        .diagram-box { border: 2px solid #0ea5e9; padding: 1rem; border-radius: 0.5rem; text-align: center; background-color: #f0f9ff; margin: 0.5rem; flex-grow: 1; }
+        .arrow { font-size: 2rem; color: #0ea5e9; margin: 0 1rem; align-self: center; }
+
+        /* Styles from llm.html - Harmonized */
+        .section-title { /* Used in Infographic Trends section */
+            color: #0284c7; /* sky-600 */
+            border-bottom-width: 2px;
+            border-color: #7dd3fc; /* sky-300 */
+            /* Original: color: #118AB2; border-bottom: 3px solid #FFD166; */
+        }
+        .stat-number { /* Used in Infographic Trends section */
+            color: #f43f5e; /* rose-500 */
+            /* Original: color: #FF6B6B; */
+        }
+        /* .flowchart-step is now styled with Tailwind classes directly in HTML */
+        /* .flowchart-arrow is now styled with Tailwind classes directly in HTML (using .text-sky-500) */
+        /* Removed specific #infographicTrends .chart-container styles, global .chart-container will apply */
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-sky-700 mb-3">Interactive Guide to Advanced LLM Development</h1>
+            <p class="text-lg text-slate-600">Explore the comprehensive lifecycle of building sophisticated Large Language Models.</p>
+        </header>
+
+        <nav class="mb-8 sticky top-0 bg-slate-50 z-10 py-4 border-b border-slate-200">
+            <ul class="flex flex-wrap justify-center gap-2 md:gap-4">
+                <li><button class="tab-button active text-sm md:text-base font-medium py-2 px-3 md:px-5 border-2 border-transparent rounded-lg" onclick="showSection('overview')">Overview</button></li>
+                <li><button class="tab-button text-sm md:text-base font-medium py-2 px-3 md:px-5 border-2 border-transparent rounded-lg" onclick="showSection('dataFoundation')">1. Data Foundation</button></li>
+                <li><button class="tab-button text-sm md:text-base font-medium py-2 px-3 md:px-5 border-2 border-transparent rounded-lg" onclick="showSection('modelBuilding')">2. Model Building</button></li>
+                <li><button class="tab-button text-sm md:text-base font-medium py-2 px-3 md:px-5 border-2 border-transparent rounded-lg" onclick="showSection('advancedCapabilities')">3. Advanced Capabilities</button></li>
+                <li><button class="tab-button text-sm md:text-base font-medium py-2 px-3 md:px-5 border-2 border-transparent rounded-lg" onclick="showSection('evaluation')">4. Evaluation</button></li>
+                <li><button class="tab-button text-sm md:text-base font-medium py-2 px-3 md:px-5 border-2 border-transparent rounded-lg" onclick="showSection('infographicTrends')">Infographic Trends</button></li>
+            </ul>
+        </nav>
+
+        <main>
+            <section id="overview" class="content-section active p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                <h2>Welcome to the LLM Development Journey</h2>
+                <p class="intro-paragraph">
+                    The development of Large Language Models (LLMs) is a dynamic and intricate process, evolving far beyond mere model scaling. This interactive guide synthesizes key aspects of the modern LLM lifecycle, from meticulous dataset curation and sophisticated training strategies to embedding advanced cognitive functions like reasoning and implementing robust safety guardrails. Our goal is to provide a clear, navigable path through this complex landscape, allowing you to explore and understand the critical stages and methodologies involved in creating truly advanced LLMs. Use the tabs above to navigate through the core phases of LLM development.
+                </p>
+                <p>
+                    This application breaks down the comprehensive "Guide to Advanced LLM Development" into digestible sections. You'll find summaries of key concepts, interactive tables to compare techniques, and conceptual visualizations to illustrate important ideas. Whether you're an ML engineer, data scientist, or AI researcher, we hope this tool enhances your understanding of how sophisticated LLMs are built and refined.
+                </p>
+                 <div class="mt-6 p-4 border border-sky-200 rounded-lg bg-sky-50">
+                    <h3 class="text-sky-700 !mt-0">How to Use This Guide:</h3>
+                    <ul class="list-disc ml-5 text-slate-700">
+                        <li>Click on the tabs above to navigate to different stages of the LLM development lifecycle.</li>
+                        <li>Explore detailed explanations and summaries within each section.</li>
+                        <li>Interact with tables – for example, the PEFT techniques table includes a filter.</li>
+                        <li>View conceptual charts that illustrate key comparisons and distributions.</li>
+                        <li>Understand the interconnectedness of data, model architecture, training, and evaluation in building advanced LLMs.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="dataFoundation" class="content-section p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                <h2>1. Data Foundation: The Bedrock of LLMs</h2>
+                <p class="intro-paragraph">
+                    The journey to a powerful Large Language Model begins with its data. This section delves into the critical processes of acquiring, cleaning, and evaluating datasets. High-quality, diverse, and ethically sourced data is not just a prerequisite but the fundamental bedrock upon which all subsequent LLM capabilities – including reasoning and safety – are built. We'll explore techniques for PII redaction, deduplication, and the emerging role of LLMs in automating data curation.
+                </p>
+
+                <h3>A. Acquiring and Loading Datasets</h3>
+                <p>The initial phase involves identifying diverse data sources (text, code, dialogue) and loading them. Common formats include JSONL, CSV, and raw text. Libraries like Hugging Face `datasets` and `pandas` are essential tools. Specialized frameworks like NVIDIA's NeMo Curator aid in large-scale data preparation.</p>
+
+                <h3>B. Comprehensive Data Cleaning and Preprocessing</h3>
+                <p>This stage is vital for removing impurities and biases. Key steps include:</p>
+                <ul>
+                    <li><strong>Standard Cleaning:</strong> Unicode normalization (e.g., `ftfy`), language identification (e.g., Polyglot), HTML tag removal.</li>
+                    <li><strong>Advanced Filtering:</strong> Quality filtering (heuristic or ML-based), domain-specific filtering, and toxicity control to remove harmful content.</li>
+                    <li><strong>PII Redaction:</strong> Protecting Personally Identifiable Information is crucial. Techniques vary in their privacy-utility trade-off.</li>
+                </ul>
+                <h4>PII Removal Techniques Comparison</h4>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Technique</th>
+                                <th>Description</th>
+                                <th>Pros</th>
+                                <th>Cons</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Redaction</td>
+                                <td>Removing PII without replacement.</td>
+                                <td>Strong privacy.</td>
+                                <td>Significant loss of context and data utility.</td>
+                            </tr>
+                            <tr>
+                                <td>Replacement (Fixed/Size-Preserving)</td>
+                                <td>Replacing PII with a fixed value or value of equal length.</td>
+                                <td>Simple; Preserves some structure.</td>
+                                <td>Loss of PII context; can create unnatural text.</td>
+                            </tr>
+                            <tr>
+                                <td>Named/Numbered Replacement</td>
+                                <td>Replacing PII with an identifying label (e.g., &lt;PERSON&gt;).</td>
+                                <td>Preserves context better for AI/ML.</td>
+                                <td>Requires label management; potential deanonymization.</td>
+                            </tr>
+                            <tr>
+                                <td>Format-Preserving Encryption (FPE)</td>
+                                <td>Encrypting PII while maintaining its original format.</td>
+                                <td>Maintains data format for usability; strong privacy.</td>
+                                <td>Complex to implement correctly.</td>
+                            </tr>
+                            <tr>
+                                <td>Synthetic Data Replacement</td>
+                                <td>Replacing PII with realistic synthetic values.</td>
+                                <td>High utility for training; good privacy.</td>
+                                <td>Requires robust synthetic data generation.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul>
+                    <li><strong>Deduplication:</strong> Eliminating redundant content (exact or near-duplicates using MinHash or semantic embeddings) to prevent bias and improve diversity.</li>
+                    <li><strong>LLM Agents for Cleaning:</strong> An emerging trend using LLMs themselves for automated data cleaning tasks.</li>
+                </ul>
+
+                <h3>C. Evaluating Dataset Quality</h3>
+                <p>Ensuring the dataset is fit for purpose involves assessing:</p>
+                <ul>
+                    <li><strong>Key Dimensions:</strong> Accuracy, Diversity, Complexity, Relevance, and Instruction Quality (for SFT).</li>
+                    <li><strong>Methodologies:</strong> Manual inspection, benchmarking against existing data, and synthetic data generation for creating diverse test cases (happy path, edge cases, adversarial inputs). LLM-as-a-Judge can also be used.</li>
+                    <li><strong>Tools:</strong> Lilac, Nomic Atlas, Argilla for exploration, curation, and annotation.</li>
+                </ul>
+
+                <h3>D. Best Practices in Dataset Curation</h3>
+                <p>Ethical and reproducible data practices are vital:</p>
+                <ul>
+                    <li>Utilize openly licensed datasets.</li>
+                    <li>Ensure transparency through comprehensive documentation.</li>
+                    <li>Minimize harm by filtering sensitive content and considering opt-out mechanisms.</li>
+                    <li>Adhere to metadata standards and legal compliance (IP, privacy).</li>
+                </ul>
+            </section>
+
+            <section id="modelBuilding" class="content-section p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                <h2>2. Model Building: Architecture, Training, and Fine-Tuning</h2>
+                <p class="intro-paragraph">
+                    Constructing an LLM involves crucial decisions about its architecture, how it processes language (tokenization), the objectives for its foundational training, and methods for adapting it to specific tasks. This section explores the Transformer architecture, various tokenization strategies, key pre-training objectives like CLM and MLM, and the increasingly important field of Parameter-Efficient Fine-Tuning (PEFT).
+                </p>
+
+                <h3>A. LLM Architectures</h3>
+                <p>Most modern LLMs are based on the Transformer architecture, known for its self-attention mechanism.</p>
+                <ul>
+                    <li><strong>Core Concepts:</strong> Self-Attention, Encoders, Decoders, Positional Encoding, Feed-Forward Networks.</li>
+                    <li><strong>Choices:</strong>
+                        <ul>
+                            <li><span class="font-semibold">Encoder-Decoder (e.g., T5, BART):</span> For sequence-to-sequence tasks like translation.</li>
+                            <li><span class="font-semibold">Decoder-Only (e.g., GPT series, LLaMA):</span> For text generation, dialogue. Typically uses Causal Language Modeling (CLM).</li>
+                            <li><span class="font-semibold">Encoder-Only (e.g., BERT, RoBERTa):</span> For NLU tasks like classification. Typically uses Masked Language Modeling (MLM).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Innovations:</strong> Multimodal LLMs (MM-LLMs), Mixture of Experts (MoE), Self-Adaptive/Modular LLMs, Retrieval Augmented Generation (RAG).</li>
+                </ul>
+
+                <h3>B. Tokenization: The Language of LLMs</h3>
+                <p>Tokenization converts raw text into numerical sequences. Subword tokenization is standard.</p>
+                <h4>Tokenization Algorithm Comparison</h4>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Algorithm</th>
+                                <th>Mechanism</th>
+                                <th>Key Characteristics</th>
+                                <th>Common Models</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Byte-Pair Encoding (BPE)</td>
+                                <td>Bottom-up merging of most frequent adjacent character/byte pairs.</td>
+                                <td>Often requires pre-tokenization. Simple, good compression.</td>
+                                <td>GPT-2, RoBERTa</td>
+                            </tr>
+                            <tr>
+                                <td>WordPiece</td>
+                                <td>Bottom-up merging based on maximizing data likelihood.</td>
+                                <td>Often requires pre-tokenization. Similar to BPE.</td>
+                                <td>BERT</td>
+                            </tr>
+                            <tr>
+                                <td>SentencePiece</td>
+                                <td>Treats input as raw Unicode stream, normalizes whitespace.</td>
+                                <td>No pre-tokenization dependency. Excellent for multilingual/morphologically complex languages.</td>
+                                <td>T5, LLaMA</td>
+                            </tr>
+                            <tr>
+                                <td>Unigram Language Model</td>
+                                <td>Top-down, prunes tokens to maximize corpus likelihood.</td>
+                                <td>Probabilistic, often produces linguistically plausible segmentations.</td>
+                                <td>ALBERT</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Choice depends on language characteristics, dataset, task, and resources. Hugging Face `tokenizers` is a key library.</p>
+
+                <h3>C. Pre-training Objectives</h3>
+                <p>These shape the LLM's foundational understanding.</p>
+                <ul>
+                    <li><strong>Causal Language Modeling (CLM):</strong> Predicts the next token (autoregressive). Used in decoder-only models (e.g., GPT) for generation.</li>
+                    <li><strong>Masked Language Modeling (MLM):</strong> Predicts masked tokens using bidirectional context. Used in encoder-only models (e.g., BERT) for understanding.</li>
+                    <li><strong>Hybrid/Novel Paradigms:</strong> MEAP (Mask-Enhanced Autoregressive Prediction), AntLM aim to combine benefits.</li>
+                </ul>
+
+                <h3>D. Fine-Tuning: Adapting LLMs</h3>
+                <p>Adapts pre-trained LLMs for specific tasks or behaviors.</p>
+                <ul>
+                    <li><strong>Supervised Fine-Tuning (SFT):</strong> Training on instruction-output pairs. Crucial for instruction-following. Datasets exist for math, code, multilingual tasks, etc.</li>
+                    <li><strong>Parameter-Efficient Fine-Tuning (PEFT):</strong> Updates only a small fraction of parameters, reducing cost and memory.
+                        <div>
+                            <label for="peft-category-filter" class="block text-sm font-medium text-slate-700 mb-1">Filter PEFT Techniques by Category:</label>
+                            <select id="peft-category-filter" class="mb-4 p-2 border border-slate-300 rounded-md shadow-sm focus:ring-sky-500 focus:border-sky-500">
+                                <option value="all">All Categories</option>
+                                <option value="Additive">Additive</option>
+                                <option value="Selective">Selective</option>
+                                <option value="Reparameterization">Reparameterization</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="peft-table">
+                                <thead>
+                                    <tr>
+                                        <th>PEFT Category</th>
+                                        <th>Specific Technique</th>
+                                        <th>Mechanism</th>
+                                        <th>Key Advantages</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-category="Additive">
+                                        <td>Additive</td>
+                                        <td>Adapters</td>
+                                        <td>Inserts small, trainable neural modules into frozen LLM layers.</td>
+                                        <td>Modularity, good for multi-task learning.</td>
+                                    </tr>
+                                    <tr data-category="Additive">
+                                        <td>Additive</td>
+                                        <td>Prompt Tuning/Prefix Tuning</td>
+                                        <td>Learns continuous task-specific prompt/prefix embeddings.</td>
+                                        <td>Minimal change to model architecture, very few trainable parameters.</td>
+                                    </tr>
+                                    <tr data-category="Additive">
+                                        <td>Additive</td>
+                                        <td>(IA)³ / Scale & Shift</td>
+                                        <td>Learns scaling and shifting vectors to modulate activations.</td>
+                                        <td>Extremely parameter-efficient.</td>
+                                    </tr>
+                                    <tr data-category="Selective">
+                                        <td>Selective</td>
+                                        <td>BitFit</td>
+                                        <td>Fine-tunes only the bias parameters.</td>
+                                        <td>Extremely simple.</td>
+                                    </tr>
+                                    <tr data-category="Reparameterization">
+                                        <td>Reparameterization</td>
+                                        <td>LoRA (Low-Rank Adaptation)</td>
+                                        <td>Injects trainable low-rank matrices to approximate weight updates.</td>
+                                        <td>Significant reduction in trainable parameters, fast training.</td>
+                                    </tr>
+                                    <tr data-category="Reparameterization">
+                                        <td>Reparameterization</td>
+                                        <td>QLoRA (Quantized LoRA)</td>
+                                        <td>Combines LoRA with quantization of frozen base model weights.</td>
+                                        <td>Further reduces memory footprint, enabling fine-tuning of very large models on single GPUs.</td>
+                                    </tr>
+                                    <tr data-category="Hybrid">
+                                        <td>Hybrid</td>
+                                        <td>MAM Adapter, UniPELT</td>
+                                        <td>Combines elements from multiple PEFT approaches.</td>
+                                        <td>Leverages strengths of multiple PEFT types for optimal trade-offs.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </li>
+                </ul>
+                <h4>Illustrative PEFT Parameter Efficiency</h4>
+                <div class="chart-container">
+                    <canvas id="peftChart"></canvas>
+                </div>
+                <p>Essential libraries: Hugging Face Transformers, PyTorch, TensorFlow.</p>
+            </section>
+
+            <section id="advancedCapabilities" class="content-section p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                <h2>3. Embedding Advanced Cognitive Capabilities and Safeguards</h2>
+                <p class="intro-paragraph">
+                    Modern LLMs aim for more than just task performance; they strive for sophisticated reasoning, planning, and safe operation. This section covers Reinforcement Learning from Human Feedback (RLHF) for alignment, techniques to enable complex reasoning (like Chain-of-Thought and Tree-of-Thoughts), and strategies for implementing robust guardrails against hallucinations.
+                </p>
+
+                <h3>A. Reinforcement Learning for LLM Alignment (RLHF)</h3>
+                <p>RLHF aligns LLMs with human preferences, making them more helpful, harmless, and honest.</p>
+                <h4>The RLHF Triad & Process</h4>
+                 <div class="flex flex-col md:flex-row justify-around items-center my-6">
+                    <div class="diagram-box"><strong>1. Supervised Fine-Tuning (SFT)</strong><p class="text-sm mt-1">Initial training on high-quality demonstrations.</p></div>
+                    <div class="arrow hidden md:block">&rarr;</div>
+                    <div class="arrow block md:hidden my-2">&darr;</div>
+                    <div class="diagram-box"><strong>2. Reward Modeling (RM)</strong><p class="text-sm mt-1">Train a model to predict human preferences from ranked responses.</p></div>
+                     <div class="arrow hidden md:block">&rarr;</div>
+                    <div class="arrow block md:hidden my-2">&darr;</div>
+                    <div class="diagram-box"><strong>3. RL Policy Optimization (e.g., PPO)</strong><p class="text-sm mt-1">Fine-tune LLM using RM rewards to maximize desired behavior.</p></div>
+                </div>
+                <p>Key RL algorithm: Proximal Policy Optimization (PPO). Libraries: TRL, RL4LMs, TRLX.</p>
+                <h4>Alternatives to RLHF-PPO</h4>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Core Mechanism</th>
+                                <th>Key Advantages</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Direct Preference Optimization (DPO)</td>
+                                <td>Direct optimization on preference pairs via a derived loss function.</td>
+                                <td>Simpler than RLHF, no explicit RM, more stable.</td>
+                            </tr>
+                            <tr>
+                                <td>Kahneman-Tversky Optimization (KTO)</td>
+                                <td>Optimizes based on binary desirable/undesirable signals.</td>
+                                <td>Reduced data collection cost.</td>
+                            </tr>
+                            <tr>
+                                <td>Reinforcement Learning from AI Feedback (RLAIF)</td>
+                                <td>Uses an AI model (LLM) to generate preference labels.</td>
+                                <td>Scalable feedback generation.</td>
+                            </tr>
+                             <tr>
+                                <td>Reinforced Token Optimization (RTO)</td>
+                                <td>MDP formulation with token-wise rewards; integrates DPO and PPO.</td>
+                                <td>More precise token-wise reward characterization.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>B. Enabling Reasoning and Thinking</h3>
+                <p>Enhancing LLMs' ability for complex reasoning and planning.</p>
+                <ul>
+                    <li><strong>Advanced Prompting:</strong>
+                        <ul>
+                            <li><span class="font-semibold">Chain-of-Thought (CoT):</span> Generate intermediate reasoning steps. Variants: Zero-shot, Few-shot, Auto-CoT, Faithful CoT.</li>
+                            <li><span class="font-semibold">Tree-of-Thoughts (ToT):</span> Explore multiple reasoning paths concurrently.</li>
+                            <li><span class="font-semibold">Graph-of-Thoughts (GoT):</span> Model reasoning as a general graph.</li>
+                            <li><span class="font-semibold">Self-Consistency:</span> Sample multiple paths, select most consistent answer.</li>
+                            <li><span class="font-semibold">Least-to-Most Prompting:</span> Decompose complex problems into simpler subproblems.</li>
+                            <li><span class="font-semibold">Program-Aided Language Models (PAL):</span> LLM generates code as reasoning steps.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Architecting for Problem Solving:</strong> Task decomposition, step-wise search-based reasoning (e.g., Mixture-of-Search-Agents with MCTS).</li>
+                    <li><strong>Integrating External Knowledge:</strong> Retrieval Augmented Generation (RAG), Knowledge Graphs in RAG (GraphRAG), Tool Use.</li>
+                    <li><strong>Ensuring Faithful Reasoning:</strong> Ensuring generated steps accurately reflect the model's process (e.g., Faithful CoT, FiDeLiS).</li>
+                </ul>
+
+                <h3>C. Implementing Hallucination Guardrails</h3>
+                <p>Hallucinations are plausible but incorrect outputs. Mitigation is key.</p>
+                <ul>
+                    <li><strong>Understanding Hallucinations:</strong>
+                        <ul>
+                            <li><span class="font-semibold">Factuality Hallucinations:</span> Factual contradiction or fabrication.</li>
+                            <li><span class="font-semibold">Faithfulness Hallucinations:</span> Instruction, context, or logical inconsistency.</li>
+                            <li><span class="font-semibold">Causes:</span> Data issues, training limitations, inference strategies.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Detection Strategies:</strong> Benchmarks (HaluEval 2.0, TruthfulQA), fact-checking (CoVe), uncertainty quantification, SelfCheckGPT, LLM-as-a-Judge.</li>
+                    <li><strong>Mitigation Techniques (Multi-Layered):</strong>
+                        <ul>
+                            <li><span class="font-semibold">Data-Centric:</span> Improved pre-training data, model editing, RAG.</li>
+                            <li><span class="font-semibold">Training-Centric:</span> Novel architectures, improved alignment (SFT, RLHF).</li>
+                            <li><span class="font-semibold">Inference-Centric:</span> Factuality-enhanced decoding, self-correction/reflection, refusal triggers.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </section>
+
+            <section id="evaluation" class="content-section p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                <h2>4. Comprehensive LLM Evaluation</h2>
+                <p class="intro-paragraph">
+                    Evaluating LLMs is a complex task that requires aligning assessment with the model's intended capabilities, such as reasoning, safety, and factuality. This section covers intrinsic metrics, standardized benchmarks like GLUE and SuperGLUE, specialized benchmarks for reasoning and hallucination, and the indispensable role of human evaluation.
+                </p>
+
+                <h3>A. Defining Evaluation Goals</h3>
+                <p>Align evaluation with desired capabilities (reasoning, safety, factuality). Human-centric criteria like coherence, accuracy, clarity, relevance, and efficiency are increasingly important.</p>
+
+                <h3>B. Intrinsic Evaluation Metrics</h3>
+                <ul>
+                    <li><strong>Perplexity:</strong> Assesses language model fluency. Lower is better.</li>
+                    <li><strong>N-gram Based (BLEU, ROUGE, METEOR):</strong> Compare n-gram overlap with reference texts for generation tasks.</li>
+                    <li><strong>Embedding-Based (BERTScore):</strong> Measures semantic similarity using contextual embeddings.</li>
+                    <li><strong>Task-Specific (F1-Score):</strong> For classification, QA, NER.</li>
+                </ul>
+
+                <h3>C. Benchmarking LLM Performance</h3>
+                <p>Standardized benchmarks compare LLMs on common tasks.</p>
+                <h4>GLUE & SuperGLUE Task Distribution</h4>
+                <div class="chart-container">
+                    <canvas id="glueSuperglueChart"></canvas>
+                </div>
+                <div class="table-responsive my-4">
+                    <table>
+                        <thead>
+                            <tr><th>Benchmark</th><th>Key Focus</th><th>Example Tasks</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>GLUE</td><td>General Language Understanding</td><td>CoLA, SST-2, MRPC, STS-B, QQP, MNLI, QNLI, RTE, WNLI</td></tr>
+                            <tr><td>SuperGLUE</td><td>More Challenging NLU & Reasoning</td><td>BoolQ, CB, COPA, MultiRC, ReCoRD, RTE, WiC, WSC</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul>
+                    <li><strong>Reasoning/Commonsense:</strong> MMLU (Massive Multitask Language Understanding), HellaSwag, ARC.</li>
+                    <li><strong>Hallucination/Safety:</strong> TruthfulQA, HaluEval 2.0, LegalHalBench, adversarial benchmarks.</li>
+                </ul>
+
+                <h3>D. Human Evaluation: The Gold Standard</h3>
+                <p>Indispensable for nuanced aspects like coherence, helpfulness, and safety.</p>
+                <ul>
+                    <li><strong>Protocols:</strong> Likert scales, A/B testing (pairwise comparison), expert reviews.</li>
+                    <li><strong>Reliability:</strong> Ensure inter-annotator agreement (IAA) through clear guidelines and training.</li>
+                    <li><strong>LLM-as-a-Judge:</strong> Using capable LLMs for evaluation. Potentials: scalability, speed. Pitfalls: bias, hallucination echo chambers, limited explainability. Often used to augment human evaluation.</li>
+                </ul>
+                 <h3>E. Iterative Evaluation and Model Refinement</h3>
+                <p>Evaluation is an ongoing, iterative process. Insights from evaluation should guide dataset refinement, training adjustments, alignment improvements, and prompting strategies. This cyclical loop is key to building increasingly capable and reliable LLMs.</p>
+            </section>
+
+            <section id="infographicTrends" class="content-section p-4 md:p-6 bg-white rounded-lg shadow-lg">
+                <header class="py-6 md:py-8 text-center shadow-md mb-6 bg-sky-600"> <!-- Adjusted py, bg color to match theme better -->
+                    <div class="container mx-auto px-4">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white">Trends & Landscape in Advanced LLM Development</h2> <!-- h1->h2 -->
+                        <p class="text-md md:text-lg text-sky-100 mt-2">An Infographic Overview Based on "A Comprehensive Guide"</p>
+                    </div>
+                </header>
+
+                <section id="llm-frontier-merged" class="mb-12"> <!-- Renamed id to avoid potential clash if llm.html was loaded separately -->
+                    <h3 class="text-2xl font-semibold mb-6 section-title pb-2">1. The Expanding LLM Frontier</h3> <!-- h2->h3, uses .section-title -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow"> <!-- Adjusted card styling to match index theme, added hover -->
+                            <h4 class="text-xl font-semibold text-sky-700 mb-3">Exponential Growth in Model Scale</h4> <!-- h3->h4 -->
+                            <p class="text-slate-700 mb-4">The journey of LLMs shows a dramatic increase in model parameters, moving from billions to trillions. This scaling is a key driver of enhanced capabilities, though it also presents significant computational challenges.</p>
+                            <p class="text-slate-700">This trend underscores the industry's push towards more powerful and general-purpose models, capable of handling increasingly complex tasks and nuanced understanding.</p>
+                        </div>
+                        <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                            <div class="chart-container"> <!-- Using index.html's chart-container styling -->
+                                <canvas id="modelGrowthChart"></canvas>
+                            </div>
+                            <p class="text-center text-sm text-slate-600 mt-2">Illustrative growth of LLM parameter counts over conceptual time periods.</p>
+                        </div>
+                    </div>
+                    <div class="mt-8 p-6 rounded-lg shadow-md text-center bg-slate-100 hover:shadow-lg transition-shadow">
+                        <h4 class="text-xl font-semibold text-sky-700 mb-2">The "Trillion Parameter Era" is Upon Us</h4> <!-- h3->h4 -->
+                        <p class="text-5xl font-bold stat-number">1T+</p> <!-- Uses .stat-number -->
+                        <p class="text-slate-700 mt-1">Conceptual representation of leading-edge model sizes, demanding innovative efficiency techniques.</p>
+                    </div>
+                </section>
+
+                <section id="core-tech-merged" class="mb-12"> <!-- Renamed id -->
+                    <h3 class="text-2xl font-semibold mb-6 section-title pb-2">2. Core Technologies & Tooling Ecosystem</h3> <!-- h2->h3, uses .section-title -->
+                    <p class="text-lg text-slate-700 mb-6">The development of advanced LLMs relies on a sophisticated stack of architectural choices, tokenization strategies, and powerful libraries. Parameter-Efficient Fine-Tuning (PEFT) has also become crucial for adapting these massive models.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                            <h4 class="text-lg font-semibold text-sky-700 mb-3">Dominant LLM Architectures</h4> <!-- h3->h4 -->
+                            <div class="chart-container"> 
+                                <canvas id="architectureChart"></canvas>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-2">Conceptual distribution of architectural approaches (Decoder-Only, Encoder-Decoder, Encoder-Only) in modern LLM development.</p>
+                        </div>
+
+                        <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                            <h4 class="text-lg font-semibold text-sky-700 mb-3">Key Development Libraries</h4> <!-- h3->h4 -->
+                            <div class="chart-container">
+                                <canvas id="librariesChart"></canvas>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-2">Relative prominence of essential libraries in the LLM development ecosystem.</p>
+                        </div>
+
+                        <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                            <h4 class="text-lg font-semibold text-sky-700 mb-3">PEFT Method Categories</h4> <!-- h3->h4 -->
+                            <div class="chart-container">
+                                <canvas id="peftCategoriesChart"></canvas> <!-- Renamed from peftChart to avoid ID collision -->
+                            </div>
+                            <p class="text-sm text-slate-600 mt-2">Distribution of PEFT techniques by category, highlighting diverse strategies for efficient model adaptation.</p>
+                        </div>
+                    </div>
+                     <div class="mt-8 p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                        <h4 class="text-lg font-semibold text-sky-700 mb-3">Tokenization: The Language of LLMs</h4> <!-- h3->h4 -->
+                        <p class="text-slate-700 mb-2 text-sm">Subword tokenization (BPE, WordPiece, SentencePiece) is standard, balancing vocabulary size and sequence length. SentencePiece is noted for multilingual and morphologically complex languages. The choice impacts performance, vocabulary, and OOV handling.</p>
+                        <div class="flex flex-wrap justify-around gap-4 text-center">
+                            <div class="p-3 bg-sky-100 rounded-lg"> 
+                                <h5 class="font-semibold text-sky-800 text-sm">BPE</h5> <!-- h4->h5 -->
+                                <p class="text-xs text-sky-700">Merges frequent pairs</p>
+                            </div>
+                            <div class="p-3 bg-emerald-100 rounded-lg"> <!-- Tailwind 'green' is more like 'emerald' or 'teal' -->
+                                <h5 class="font-semibold text-emerald-800 text-sm">WordPiece</h5> <!-- h4->h5 -->
+                                <p class="text-xs text-emerald-700">Likelihood-based merge</p>
+                            </div>
+                            <div class="p-3 bg-amber-100 rounded-lg"> 
+                                <h5 class="font-semibold text-amber-800 text-sm">SentencePiece</h5> <!-- h4->h5 -->
+                                <p class="text-xs text-amber-700">Unicode stream, no pre-tokenization</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="value-chain-merged" class="mb-12"> <!-- Renamed id -->
+                    <h3 class="text-2xl font-semibold mb-6 section-title pb-2">3. The LLM Development Value Chain</h3> <!-- h2->h3, uses .section-title -->
+                    <p class="text-lg text-slate-700 mb-6">Creating advanced LLMs involves an intricate, iterative lifecycle, from meticulous data preparation to comprehensive evaluation and refinement.</p>
+                    <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                        <div class="flex flex-col md:flex-row justify-around items-center space-y-4 md:space-y-0 md:space-x-2">
+                            <div class="bg-sky-600 text-white p-3 rounded-lg text-center shadow-md w-full md:w-1/5 border-2 border-sky-700"> 
+                                <h5 class="font-bold text-sm">1. Dataset Prep</h5> <!-- h4->h5 -->
+                                <p class="text-xs mt-1 opacity-90">Acquisition, Clean, PII Redact, Dedupe, Eval</p>
+                            </div>
+                            <div class="text-3xl font-bold hidden md:block text-sky-600">&rarr;</div> 
+                            <div class="text-3xl font-bold block md:hidden self-center my-2 text-sky-600">&darr;</div>
+                            <div class="bg-sky-600 text-white p-3 rounded-lg text-center shadow-md w-full md:w-1/5 border-2 border-sky-700">
+                                <h5 class="font-bold text-sm">2. Core Construct</h5> <!-- h4->h5 -->
+                                <p class="text-xs mt-1 opacity-90">Arch. Select, Tokenize, Pre-train (CLM/MLM)</p>
+                            </div>
+                            <div class="text-3xl font-bold hidden md:block text-sky-600">&rarr;</div>
+                             <div class="text-3xl font-bold block md:hidden self-center my-2 text-sky-600">&darr;</div>
+                            <div class="bg-sky-600 text-white p-3 rounded-lg text-center shadow-md w-full md:w-1/5 border-2 border-sky-700">
+                                <h5 class="font-bold text-sm">3. Fine-Tune/Align</h5> <!-- h4->h5 -->
+                                <p class="text-xs mt-1 opacity-90">SFT, PEFT (LoRA), RLHF (PPO, DPO)</p>
+                            </div>
+                             <div class="text-3xl font-bold hidden md:block text-sky-600">&rarr;</div>
+                             <div class="text-3xl font-bold block md:hidden self-center my-2 text-sky-600">&darr;</div>
+                            <div class="bg-sky-600 text-white p-3 rounded-lg text-center shadow-md w-full md:w-1/5 border-2 border-sky-700">
+                                <h5 class="font-bold text-sm">4. Advanced Capab.</h5> <!-- h4->h5 -->
+                                <p class="text-xs mt-1 opacity-90">Reason (CoT), RAG, Tools, Guardrails</p>
+                            </div>
+                             <div class="text-3xl font-bold hidden md:block text-sky-600">&rarr;</div>
+                            <div class="text-3xl font-bold block md:hidden self-center my-2 text-sky-600">&darr;</div>
+                            <div class="bg-sky-600 text-white p-3 rounded-lg text-center shadow-md w-full md:w-1/5 border-2 border-sky-700">
+                                <h5 class="font-bold text-sm">5. Evaluate/Refine</h5> <!-- h4->h5 -->
+                                <p class="text-xs mt-1 opacity-90">Benchmarks, Human Eval, Iterate</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="frontier-capabilities-merged" class="mb-12"> <!-- Renamed id -->
+                    <h3 class="text-2xl font-semibold mb-6 section-title pb-2">4. Frontier Capabilities & Mitigation Strategies</h3> <!-- h2->h3, uses .section-title -->
+                    <p class="text-lg text-slate-700 mb-6">The cutting edge of LLM development focuses on embedding sophisticated reasoning and implementing robust guardrails against issues like hallucination.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                            <h4 class="text-lg font-semibold text-sky-700 mb-3">Advanced Reasoning Techniques</h4> <!-- h3->h4 -->
+                            <div class="chart-container">
+                                <canvas id="reasoningTechniquesChart"></canvas>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-2">Conceptual impact/complexity of various advanced prompting and reasoning strategies.</p>
+                        </div>
+                        <div class="p-6 rounded-lg shadow-md bg-slate-100 hover:shadow-lg transition-shadow">
+                            <h4 class="text-lg font-semibold text-sky-700 mb-3">Hallucination Mitigation Layers</h4> <!-- h3->h4 -->
+                            <div class="chart-container">
+                                <canvas id="hallucinationMitigationChart"></canvas>
+                            </div>
+                            <p class="text-sm text-slate-600 mt-2">Multi-layered approach to mitigating hallucinations, showing conceptual distribution of effort/focus.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="py-6 text-center border-t border-sky-200 mt-6"> 
+                    <p class="text-sm text-slate-600">&copy; 2025 LLM Trends Infographic. Data synthesized from "A Comprehensive Guide to Advanced LLM Development".</p>
+                </footer>
+            </section>
+        </main>
+
+        <footer class="mt-12 pt-8 border-t border-slate-300 text-center">
+            <p class="text-sm text-slate-500">&copy; 2025 Interactive LLM Development Guide. Content synthesized from "A Comprehensive Guide to Advanced LLM Development".</p>
+        </footer>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+                if (button.getAttribute('onclick').includes(sectionId)) {
+                    button.classList.add('active');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // PEFT Chart
+            const peftCtx = document.getElementById('peftChart');
+            if (peftCtx) {
+                new Chart(peftCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Full Fine-Tune', 'LoRA', 'Adapters', '(IA)³', 'BitFit'],
+                        datasets: [{
+                            label: 'Illustrative Trainable Parameters (Lower is More Efficient)',
+                            data: [100, 10, 15, 2, 0.5], // Illustrative values
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(153, 102, 255, 0.6)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Relative % of Parameters Trained (Illustrative)' }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'PEFT Methods: Illustrative Parameter Efficiency', font: { size: 16 } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.x !== null) {
+                                            label += context.parsed.x + '% (Illustrative)';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // GLUE/SuperGLUE Chart
+            const glueCtx = document.getElementById('glueSuperglueChart');
+            if (glueCtx) {
+                 new Chart(glueCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['NLI', 'Similarity/Paraphrase', 'QA/Reasoning', 'Single Sentence Class.', 'Other'],
+                        datasets: [{
+                            label: 'Task Distribution',
+                            data: [35, 20, 25, 15, 5], // Approximate distribution based on GLUE/SuperGLUE
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 206, 86, 0.7)',
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(153, 102, 255, 0.7)',
+                                'rgba(255, 159, 64, 0.7)'
+                            ],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', },
+                            title: { display: true, text: 'GLUE/SuperGLUE Task Type Distribution (Approx.)', font: { size: 16 } },
+                             tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed + '%';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // PEFT Table Filter
+            const peftFilter = document.getElementById('peft-category-filter');
+            const peftTable = document.getElementById('peft-table');
+            if (peftFilter && peftTable) {
+                peftFilter.addEventListener('change', function() {
+                    const selectedCategory = this.value;
+                    const rows = peftTable.querySelectorAll('tbody tr');
+                    rows.forEach(row => {
+                        if (selectedCategory === 'all' || row.dataset.category === selectedCategory) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+
+        // Script from llm.html, integrated and refactored
+        const FONT_COLOR_LLM = '#073B4C'; // Renamed to avoid conflict
+        const GRID_COLOR_LLM = 'rgba(7, 59, 76, 0.1)'; // Renamed to avoid conflict
+
+        function wrapLabelLlm(str, maxWidth) { // Renamed
+            if (typeof str !== 'string') return str;
+            if (str.length <= maxWidth) return str;
+            const words = str.split(' ');
+            let currentLine = '';
+            const lines = [];
+            for (const word of words) {
+                if ((currentLine + word).length > maxWidth && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = '';
+                }
+                currentLine += word + ' ';
+            }
+            lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const tooltipTitleCallbackLlm = function(tooltipItems) { // Renamed
+            const item = tooltipItems[0];
+            if (!item || !item.chart || !item.chart.data || !item.chart.data.labels) return '';
+            let label = item.chart.data.labels[item.dataIndex];
+            if (Array.isArray(label)) {
+                return label.join(' ');
+            } else {
+                return label;
+            }
+        };
+        
+        let modelGrowthChartInstance, architectureChartInstance, librariesChartInstance, peftCategoriesChartInstance, reasoningTechniquesChartInstance, hallucinationMitigationChartInstance;
+
+        function initInfographicCharts() {
+            // Ensure Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error("Chart.js is not loaded. Infographic charts cannot be initialized.");
+                return;
+            }
+            
+            // Chart defaults for this section - can be customized further
+            const defaultLlmChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: FONT_COLOR_LLM, font: { size: 10 }, boxWidth: 15, padding: 10 },
+                        position: 'bottom'
+                    },
+                    tooltip: { callbacks: { title: tooltipTitleCallbackLlm } },
+                    title: { display: true, color: FONT_COLOR_LLM, font: { size: 14 } }
+                },
+                scales: {
+                    x: { ticks: { color: FONT_COLOR_LLM, font: {size: 10}, callback: function(value, index, values) { return wrapLabelLlm(this.getLabelForValue(value), 10);} }, grid: { color: GRID_COLOR_LLM } },
+                    y: { ticks: { color: FONT_COLOR_LLM, font: {size: 10} }, grid: { color: GRID_COLOR_LLM } }
+                }
+            };
+
+            const modelGrowthCtx = document.getElementById('modelGrowthChart');
+            if (modelGrowthCtx && !Chart.getChart(modelGrowthCtx)) {
+                modelGrowthChartInstance = new Chart(modelGrowthCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Early Gen', 'Mid Gen', 'Late Gen', 'Current Edge', 'Near Future'],
+                        datasets: [{
+                            label: 'Conceptual LLM Parameter Growth (Log Scale)',
+                            data: [1, 10, 100, 1000, 10000],
+                            borderColor: '#FF6B6B', backgroundColor: 'rgba(255, 107, 107, 0.2)', fill: true, tension: 0.1
+                        }]
+                    },
+                    options: { ...defaultLlmChartOptions,
+                        scales: {
+                            y: { type: 'logarithmic', title: { display: true, text: 'Parameters (Conceptual Log Scale)', color: FONT_COLOR_LLM }, ticks: { color: FONT_COLOR_LLM }, grid: { color: GRID_COLOR_LLM } },
+                            x: { title: { display: true, text: 'Conceptual Time / Generation', color: FONT_COLOR_LLM }, ticks: { color: FONT_COLOR_LLM, callback: function(value, index, values) { return wrapLabelLlm(this.getLabelForValue(value), 10);}}, grid: { color: GRID_COLOR_LLM } }
+                        },
+                        plugins: { ...defaultLlmChartOptions.plugins, title: { ...defaultLlmChartOptions.plugins.title, text: 'LLM Scale Expansion', font: {size: 16} } }
+                    }
+                });
+            }
+
+            const architectureCtx = document.getElementById('architectureChart');
+            if (architectureCtx && !Chart.getChart(architectureCtx)) {
+                architectureChartInstance = new Chart(architectureCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Decoder-Only (e.g., GPT, LLaMA)', 'Encoder-Decoder (e.g., T5, BART)', 'Encoder-Only (e.g., BERT)'],
+                        datasets: [{
+                            label: 'LLM Architectures', data: [65, 25, 10],
+                            backgroundColor: ['#118AB2', '#06D6A0', '#FFD166'], borderColor: '#FFFFFF', borderWidth: 2
+                        }]
+                    },
+                    options: { ...defaultLlmChartOptions, plugins: { ...defaultLlmChartOptions.plugins, title: { ...defaultLlmChartOptions.plugins.title, text: 'Dominant LLM Architectures'} } }
+                });
+            }
+
+            const librariesCtx = document.getElementById('librariesChart');
+            if (librariesCtx && !Chart.getChart(librariesCtx)) {
+                librariesChartInstance = new Chart(librariesCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Hugging Face Transformers', 'PyTorch', 'TensorFlow'],
+                        datasets: [{
+                            label: 'Relative Prominence Score', data: [90, 75, 60],
+                            backgroundColor: ['#FF6B6B', '#FFD166', '#06D6A0'],
+                        }]
+                    },
+                    options: { ...defaultLlmChartOptions, indexAxis: 'y', plugins: { ...defaultLlmChartOptions.plugins, legend: {display: false}, title: { ...defaultLlmChartOptions.plugins.title, text: 'Key Development Libraries'} } }
+                });
+            }
+
+            const peftCategoriesCtx = document.getElementById('peftCategoriesChart'); // ID was changed
+            if (peftCategoriesCtx && !Chart.getChart(peftCategoriesCtx)) {
+                peftCategoriesChartInstance = new Chart(peftCategoriesCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Additive (Adapters, Prompts, IA³)', 'Selective (BitFit, Masking)', 'Reparameterization (LoRA, QLoRA)', 'Hybrid (UniPELT, MAM)'],
+                        datasets: [{
+                            label: 'PEFT Method Categories', data: [3, 2, 2, 2],
+                            backgroundColor: ['#118AB2', '#06D6A0', '#FFD166', '#FF6B6B'], borderColor: '#FFFFFF', borderWidth: 2
+                        }]
+                    },
+                    options: { ...defaultLlmChartOptions, plugins: { ...defaultLlmChartOptions.plugins, title: { ...defaultLlmChartOptions.plugins.title, text: 'PEFT Method Distribution'} } }
+                });
+            }
+
+            const reasoningCtx = document.getElementById('reasoningTechniquesChart');
+            if (reasoningCtx && !Chart.getChart(reasoningCtx)) {
+                reasoningTechniquesChartInstance = new Chart(reasoningCtx, {
+                    type: 'bubble',
+                    data: {
+                        datasets: [
+                            { label: 'Chain-of-Thought (CoT)', data: [{x: 10, y: 20, r: 25}], backgroundColor: '#118AB2BF' },
+                            { label: 'Tree-of-Thoughts (ToT)', data: [{x: 15, y: 25, r: 20}], backgroundColor: '#06D6A0BF' },
+                            { label: 'Graph-of-Thoughts (GoT)', data: [{x: 20, y: 15, r: 18}], backgroundColor: '#FFD166BF' },
+                            { label: 'Program-Aided (PAL)', data: [{x: 25, y: 22, r: 22}], backgroundColor: '#FF6B6BBF' },
+                            { label: 'Self-Consistency', data: [{x: 12, y: 12, r: 15}], backgroundColor: '#073B4CBF' }
+                        ]
+                    },
+                    options: { ...defaultLlmChartOptions,
+                        scales: { x: { display: false, min: 5, max: 30 }, y: { display: false, min: 5, max: 30 } },
+                        plugins: { ...defaultLlmChartOptions.plugins,
+                            tooltip: { callbacks: { label: function(context) { return context.dataset.label + ': Impact/Complexity (Conceptual) ' + context.raw.r; }, title: function() { return ''; }}},
+                            title: { ...defaultLlmChartOptions.plugins.title, text: 'Advanced Reasoning Techniques', font: {size: 16}}
+                        }
+                    }
+                });
+            }
+
+            const hallucinationCtx = document.getElementById('hallucinationMitigationChart');
+            if (hallucinationCtx && !Chart.getChart(hallucinationCtx)) {
+                hallucinationMitigationChartInstance = new Chart(hallucinationCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Mitigation Focus Areas'],
+                        datasets: [
+                            { label: 'Data-Centric', data: [40], backgroundColor: '#118AB2' },
+                            { label: 'Training-Centric', data: [35], backgroundColor: '#06D6A0' },
+                            { label: 'Inference-Centric', data: [25], backgroundColor: '#FFD166' }
+                        ]
+                    },
+                    options: { ...defaultLlmChartOptions, indexAxis: 'y',
+                        scales: { x: { stacked: true, title: {display: true, text: 'Conceptual Effort Distribution (%)', color: FONT_COLOR_LLM}, ticks: {color: FONT_COLOR_LLM}, grid: {color: GRID_COLOR_LLM} }, y: { stacked: true, ticks: {display: false}, grid: {display: false} } },
+                        plugins: { ...defaultLlmChartOptions.plugins,
+                           tooltip: { callbacks: { title: function() { return 'Mitigation Layer';} } },
+                           title: { ...defaultLlmChartOptions.plugins.title, text: 'Hallucination Mitigation Layers', font: {size: 16}}
+                        }
+                    }
+                });
+            }
+        }
+
+        // Modify the existing showSection function to initialize charts when infographicTrends is shown
+        const originalShowSection = window.showSection;
+        window.showSection = function(sectionId) {
+            // Destroy charts in the infographic section if another section is chosen to free resources and prevent errors
+            if (sectionId !== 'infographicTrends') {
+                if (modelGrowthChartInstance) modelGrowthChartInstance.destroy(); modelGrowthChartInstance = null;
+                if (architectureChartInstance) architectureChartInstance.destroy(); architectureChartInstance = null;
+                if (librariesChartInstance) librariesChartInstance.destroy(); librariesChartInstance = null;
+                if (peftCategoriesChartInstance) peftCategoriesChartInstance.destroy(); peftCategoriesChartInstance = null;
+                if (reasoningTechniquesChartInstance) reasoningTechniquesChartInstance.destroy(); reasoningTechniquesChartInstance = null;
+                if (hallucinationMitigationChartInstance) hallucinationMitigationChartInstance.destroy(); hallucinationMitigationChartInstance = null;
+            }
+
+            originalShowSection(sectionId); // Call the original function
+
+            if (sectionId === 'infographicTrends') {
+                 // Delay slightly to ensure section is visible and DOM is updated for Chart.js
+                setTimeout(initInfographicCharts, 50);
+            }
+        }
+
+        // If the infographicTrends section is active on page load (e.g. due to URL hash or previous state), initialize its charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if the active tab is infographicTrends (e.g. if it was set by default or URL hash)
+            // This logic might need to be more robust depending on how initial active tab is set
+            const currentActiveButton = document.querySelector('.tab-button.active');
+            if (currentActiveButton && currentActiveButton.getAttribute('onclick').includes('infographicTrends')) {
+                 setTimeout(initInfographicCharts, 100); // Longer timeout for initial load
+            }
+        });
+    </script>
+</body>
+</html>
